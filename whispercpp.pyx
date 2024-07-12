@@ -50,8 +50,6 @@ cdef cnp.ndarray[cnp.float32_t, ndim=1, mode="c"] load_audio(bytes file, int sr 
             )
             .run(
                 cmd=["ffmpeg", "-nostdin"],
-                capture_stdout=True,
-                capture_stderr=True
             )
         )[0]
     except:
