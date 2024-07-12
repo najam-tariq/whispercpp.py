@@ -8,8 +8,6 @@ import os
 from pathlib import Path
 
 MODELS_DIR = str(Path('~/.ggml-models').expanduser())
-print("Saving models to:", MODELS_DIR)
-
 
 cimport numpy as cnp
 
@@ -34,7 +32,6 @@ def download_model(model):
     if model_exists(model):
         return
 
-    print(f'Downloading {model}...')
     url = MODELS[model]
     r = requests.get(url, allow_redirects=True)
     os.makedirs(MODELS_DIR, exist_ok=True)
@@ -72,8 +69,6 @@ cdef whisper_full_params default_params() nogil:
     cdef whisper_full_params params = whisper_full_default_params(
         whisper_sampling_strategy.WHISPER_SAMPLING_GREEDY
     )
-    params.print_realtime = True
-    params.print_progress = True
     params.translate = False
     params.language = <const char *> LANGUAGE
     n_threads = N_THREADS
@@ -97,14 +92,12 @@ cdef class Whisper:
             self.ctx = whisper_init_from_file(model_b)
         
         self.params = default_params()
-        whisper_print_system_info()
 
 
     def __dealloc__(self):
         whisper_free(self.ctx)
 
     def transcribe(self, filename=TEST_FILE):
-        print("Loading data..")
         if (type(filename) == np.ndarray) :
             temp = filename
         
@@ -116,11 +109,9 @@ cdef class Whisper:
         
         cdef cnp.ndarray[cnp.float32_t, ndim=1, mode="c"] frames = temp
 
-        print("Transcribing..")
         return whisper_full(self.ctx, self.params, &frames[0], len(frames))
     
     def extract_text(self, int res):
-        print("Extracting text...")
         if res != 0:
             raise RuntimeError
         cdef int n_segments = whisper_full_n_segments(self.ctx)
